@@ -1,38 +1,81 @@
 .App {
   text-align: center;
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.grid {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin-top: 20px;
 }
 
-.App-link {
-  color: #61dafb;
+.row {
+  display: flex;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.cell {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 18px;
+  margin: 2px;
+  border: 1px solid #000;
+  text-transform: uppercase;
+}
+
+.frog::before {
+  content: "🐸";
+  font-size: 25px;
+}
+
+.frog {
+  background-color: green;
+}
+
+.row-12 {
+  background-color: purple;
+}
+
+.row-0 .col-0,
+.row-0 .col-2,
+.row-0 .col-4,
+.row-0 .col-6,
+.row-0 .col-8,
+.row-0 .col-10 {
+  background-color: brown;
+}
+
+.row-0 .col-1::before,
+.row-0 .col-3::before,
+.row-0 .col-5::before,
+.row-0 .col-7::before,
+.row-0 .col-9::before {
+  content: "🐸";
+  background-color: blue;
+  line-height: 40px;
+  width: 40px;
+  font-size: 25px;
+
+}
+
+.row-11,
+.row-10,
+.row-9,
+.row-8,
+.row-7 {
+  background-color: #000;
+}
+
+.row-6 {
+  background-color: purple;
+}
+
+.row-5,
+.row-4,
+.row-3,
+.row-2,
+.row-1 {
+  background-color: blue;
 }
