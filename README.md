@@ -5,7 +5,7 @@ Arrow keys to move ↑↓←→
 
 The objective is to guide your frog to the other frogs across the level.
 
-To start, run ### npm start in the project directory. 
+To start, run ### `npm start` in the project directory. 
 
 To Do:
 
