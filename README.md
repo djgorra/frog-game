@@ -8,6 +8,9 @@ The objective is to guide your frog to the other frogs across the level.
 To start, run ### npm start in the project directory. 
 
 To Do:
+
 -Add cars and hit detection
+
 -Add timer and lives
+
 -Adjust scoring
