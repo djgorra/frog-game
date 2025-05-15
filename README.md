@@ -17,6 +17,8 @@ To Do:
 
 -Adjust scoring
 
+-Add animations
+
 -Add sound effects
 
 Stretch goals:
