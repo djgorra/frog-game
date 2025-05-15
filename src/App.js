@@ -19,7 +19,14 @@ function App() {
   const [cars, setCars] = useState([
     { row: 11, col: 9, direction: 'left', speed: 0.02 },
     { row: 11, col: 6, direction: 'left', speed: 0.02 },
-    { row: 10, col: 2, direction: 'right', speed: 0.03 },
+    { row: 11, col: 3, direction: 'left', speed: 0.02 },
+    { row: 11, col: 1, direction: 'left', speed: 0.02 },
+
+    { row: 10, col: 9, direction: 'right', speed: 0.02 },
+    { row: 10, col: 6, direction: 'right', speed: 0.02 },
+    { row: 10, col: 3, direction: 'right', speed: 0.02 },
+    { row: 10, col: 1, direction: 'right', speed: 0.02 },
+
     { row: 9, col: 4, direction: 'left', speed:0.02},
     { row: 8, col: 6, direction: 'right', speed: 0.06},
     { row: 7, col: 1, direction: 'left', speed: 0.01},
@@ -28,9 +35,10 @@ function App() {
   const [score, setScore] = useState(0)
   const [time, setTime] = useState(60)
   const [gameOver, setGameOver] = useState(false);
-  const [lives, setLives] = useState()
+  const [lives, setLives] = useState(10);
   const [gameActive, setGameActive] = useState(true);
-
+  const [frogDead, setFrogDead] = useState(false);
+  const [furthestRow, setFurthestRow] = useState(grid.length -1);
   const animationFrameId = useRef(null);
 
     // Move cars using requestAnimationFrame
@@ -79,10 +87,19 @@ function App() {
   
       if (collision) {
         setGameActive(false);
-        setTimeout(() => {
-          setFrog([12, 5]);
-          setGameActive(true);
-        }, 1000);
+        setFrogDead(true);
+        if (lives > 0) {
+          setTimeout(() => {
+            setFrog([12, 5]);
+            setFurthestRow(grid.length -1);
+            setLives(lives - 1);
+            setFrogDead(false);
+            setGameActive(true);
+          }, 1000);
+        } else {
+          setGameOver(true);
+          alert("Game Over!  Thanks for playing. \n Your score is: " + score);
+        }
       }
     }, [frog, cars]);
 
@@ -101,8 +118,9 @@ function App() {
 
   // Handle arrow key presses
   useEffect(() => {
+    
     const handleKeyDown = (e) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !pressedKeys.has(e.key)) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !pressedKeys.has(e.key) && gameActive) {
         setPressedKeys(prev => new Set(prev).add(e.key)); // Mark key as pressed
 
         const [row, col] = frog;
@@ -111,12 +129,17 @@ function App() {
           case 'ArrowUp':
             if (row === 1 && goalFrogs.includes(col)) {
               setFrog([row - 1, col])
-              setScore((score) => score + 1)
+              setScore((score) => score + 50);
+              setFurthestRow(grid.length -1);
               setTimeout(() => {
                 console.log("Score!");
                 setFrog([12, 5])
               }, 1000);
             } else if (row > 1) {
+              if (row <= furthestRow) {
+                setFurthestRow(furthestRow - 1);
+                setScore((score) => score + 10);
+              }
               setFrog([row - 1, col]) // Move up (decrease row)
             }
             break;
@@ -164,6 +187,9 @@ function App() {
           <div key={rowIndex} className={`row row-${rowIndex}`}>
             {row.map((cell, colIndex) => (
               <> <div className={clsx('cell', `col-${colIndex}`)}>
+                {frogDead && rowIndex === frog[0] && colIndex === frog[1] ? (
+                  <div className="frog">💀</div>
+                ) : null}
                 {checkFrog(rowIndex, colIndex) && <div className="frog">🐸</div>}
                 {checkCar(rowIndex, colIndex) && (
                   <div className={`car car-${cars.find(c => c.row === rowIndex)?.direction}`}>
@@ -176,7 +202,15 @@ function App() {
           </div>
         ))}
       </div>
-      <text>Score: {score}</text>
+      <div className="gameInfoContainer">
+        <text>Score: {score}</text>
+        <text>Time: {time}</text>
+        
+      </div>
+      <div className="lifeContainer">
+        {[...Array(lives)].map((e, i) => <span className="life" key={i}>🐸</span>)}
+      </div>
+        
     </div>
   );
 }
