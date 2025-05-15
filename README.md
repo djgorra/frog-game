@@ -9,8 +9,17 @@ To start, run `npm start` in the project directory.
 
 To Do:
 
--Add cars and hit detection
+-~Add cars and hit detection~
+
+-Add logs and water
 
 -Add timer and lives
 
 -Adjust scoring
+
+-Add sound effects
+
+Stretch goals:
+
+Online leaderboard for high scores
+
