@@ -38,13 +38,15 @@ text {
   color: white;
 }
 
-.frog::before {
-  content: "🐸";
-  font-size: 25px;
-}
-
 .frog {
   background-color: green;
+  height: 40px;
+  width: 40px;
+  line-height: 40px;
+  z-index: 1;;
+}
+.car {
+  z-index: 2;
 }
 
 .row-12 {
