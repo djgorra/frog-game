@@ -13,9 +13,9 @@ To Do:
 
 -Add logs and water
 
--Add timer and lives
+-~Add timer and lives~
 
--Adjust scoring
+-~Adjust scoring~
 
 -Add animations
 
