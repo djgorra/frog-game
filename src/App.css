@@ -11,6 +11,7 @@
   text-align: center;
   font-family: Arial, sans-serif;
   padding: 20px;
+  overflow: hidden;
 }
 
 .grid {
@@ -18,6 +19,7 @@
   flex-direction: column;
   align-items: center;
   margin: 20px;
+  overflow: hidden;
 }
 
 .row {
@@ -32,7 +34,6 @@
   margin: 2px;
   border: 1px solid #000;
   text-transform: uppercase;
-  overflow: hidden;
 }
 
 .gameInfoContainer {
@@ -56,6 +57,28 @@ text {
 
 .car {
   z-index: 2;
+  overflow: show;
+  font-size: 25px;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .row-12 {

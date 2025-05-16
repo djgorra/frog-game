@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import clsx from 'clsx';
+import Row from './Row';
 
 
 
@@ -15,22 +16,10 @@ function App() {
     grid.push(row);
   } // Grid constructor
 
+  const length = 13
+  const width = 13
+
   const [frog, setFrog] = useState([12, 5])
-  const [cars, setCars] = useState([
-    { row: 11, col: 9, direction: 'left', speed: 0.02 },
-    { row: 11, col: 6, direction: 'left', speed: 0.02 },
-    { row: 11, col: 3, direction: 'left', speed: 0.02 },
-    { row: 11, col: 1, direction: 'left', speed: 0.02 },
-
-    { row: 10, col: 9, direction: 'right', speed: 0.02 },
-    { row: 10, col: 6, direction: 'right', speed: 0.02 },
-    { row: 10, col: 3, direction: 'right', speed: 0.02 },
-    { row: 10, col: 1, direction: 'right', speed: 0.02 },
-
-    { row: 9, col: 4, direction: 'left', speed:0.02},
-    { row: 8, col: 6, direction: 'right', speed: 0.06},
-    { row: 7, col: 1, direction: 'left', speed: 0.01},
-  ]);
   const [pressedKeys, setPressedKeys] = useState(new Set());
   const [score, setScore] = useState(0)
   const [time, setTime] = useState(60)
@@ -38,87 +27,33 @@ function App() {
   const [lives, setLives] = useState(10);
   const [gameActive, setGameActive] = useState(true);
   const [frogDead, setFrogDead] = useState(false);
-  const [furthestRow, setFurthestRow] = useState(grid.length -1);
-  const animationFrameId = useRef(null);
+  const [furthestRow, setFurthestRow] = useState(length - 1);
 
-    // Move cars using requestAnimationFrame
-    useEffect(() => {
-      if (!gameActive) {
-        if (animationFrameId.current) {
-          cancelAnimationFrame(animationFrameId.current);
-          animationFrameId.current = null;
-        }
-        return;
-      }
-  
-      const moveCars = () => {  
-        setCars(prevCars => 
-          prevCars.map(car => {
-            const movement = car.speed
-            let newCol = car.col + (car.direction === 'right' ? movement : -movement);
-            
-            // Wrap around edges
-            if (newCol >= 11) newCol -= 11;
-            if (newCol < 0) newCol += 11;
-            
-            return { ...car, col: newCol };
-          })
-        );
-  
-        animationFrameId.current = requestAnimationFrame(moveCars);
-      };
-  
-      animationFrameId.current = requestAnimationFrame(moveCars);
-  
-      return () => {
-        if (animationFrameId.current) {
-          cancelAnimationFrame(animationFrameId.current);
-        }
-      };
-    }, [gameActive]);
-  
-    // Check for collisions
-    useEffect(() => {
-      const collision = cars.some(car => {
-        const frogCol = Math.round(frog[1]);
-        const carCol = Math.round(car.col);
-        return car.row === frog[0] && carCol === frogCol;
-      });
-  
-      if (collision) {
-        setGameActive(false);
-        setFrogDead(true);
-        if (lives > 0) {
-          setTimeout(() => {
-            setFrog([12, 5]);
-            setFurthestRow(grid.length -1);
-            setLives(lives - 1);
-            setFrogDead(false);
-            setGameActive(true);
-          }, 1000);
-        } else {
-          setGameOver(true);
-          alert("Game Over!  Thanks for playing. \n Your score is: " + score);
-        }
-      }
-    }, [frog, cars]);
 
-  const checkFrog = (row, col) => {
-    return row === frog[0] && col === frog[1];
-  }
+  const killFrog = useCallback(() => {
+    setGameActive(false);
+    setFrogDead(true);
+    if (lives > 0) {
+      setTimeout(() => {
+        setFrog([12, 5]);
+        setFurthestRow(length - 1);
+        setLives(lives - 1);
+        setFrogDead(false);
+        setGameActive(true);
+      }, 1000);
+    } else {
+      setGameOver(true);
+      alert("Game Over! Thanks for playing! Your score is: " + score);
+    }
+  })
 
-  const checkCar = (row, col) => {
-    return cars.some(car => {
-      const carCol = Math.round(car.col);
-      return car.row === row && carCol === col;
-    });
-  };
+
 
   const goalFrogs = [1, 3, 5, 7, 9]
 
   // Handle arrow key presses
   useEffect(() => {
-    
+
     const handleKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !pressedKeys.has(e.key) && gameActive) {
         setPressedKeys(prev => new Set(prev).add(e.key)); // Mark key as pressed
@@ -130,7 +65,7 @@ function App() {
             if (row === 1 && goalFrogs.includes(col)) {
               setFrog([row - 1, col])
               setScore((score) => score + 50);
-              setFurthestRow(grid.length -1);
+              setFurthestRow(length - 1);
               setTimeout(() => {
                 console.log("Score!");
                 setFrog([12, 5])
@@ -144,13 +79,13 @@ function App() {
             }
             break;
           case 'ArrowDown':
-            if (row < grid.length - 1 && row > 0) setFrog([row + 1, col]); // Move down (increase row)
+            if (row < length - 1 && row > 0) setFrog([row + 1, col]); // Move down (increase row)
             break;
           case 'ArrowLeft':
             if (col > 0 && row > 0) setFrog([row, col - 1]); // Move left (decrease column)
             break;
           case 'ArrowRight':
-            if (col < grid[0].length - 1 && row > 0) setFrog([row, col + 1]); // Move right (increase column)
+            if (col < width - 1 && row > 0) setFrog([row, col + 1]); // Move right (increase column)
             break;
           default:
             break;
@@ -178,39 +113,30 @@ function App() {
       window.removeEventListener('keyup', handleKeyUp);
     };
 
-  }, [frog, grid, pressedKeys]); // Re-run effect when frog or grid changes
+  }, [frog, pressedKeys]); // Re-run effect when frog or grid changes
 
   return (
     <div className="App">
       <div className="grid">
         {grid.map((row, rowIndex) => (
-          <div key={rowIndex} className={`row row-${rowIndex}`}>
-            {row.map((cell, colIndex) => (
-              <> <div className={clsx('cell', `col-${colIndex}`)}>
-                {frogDead && rowIndex === frog[0] && colIndex === frog[1] ? (
-                  <div className="frog">💀</div>
-                ) : null}
-                {checkFrog(rowIndex, colIndex) && <div className="frog">🐸</div>}
-                {checkCar(rowIndex, colIndex) && (
-                  <div className={`car car-${cars.find(c => c.row === rowIndex)?.direction}`}>
-                    🚗
-                    
-                  </div>
-                )}
-              </div></>
-            ))}
-          </div>
+
+          <Row
+            key={rowIndex}
+            rowIndex={rowIndex}
+            frog={frog}
+            frogDead={frogDead}
+            killFrog={killFrog} />
         ))}
       </div>
       <div className="gameInfoContainer">
         <text>Score: {score}</text>
         <text>Time: {time}</text>
-        
+
       </div>
       <div className="lifeContainer">
         {[...Array(lives)].map((e, i) => <span className="life" key={i}>🐸</span>)}
       </div>
-        
+
     </div>
   );
 }
