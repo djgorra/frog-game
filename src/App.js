@@ -17,9 +17,9 @@ function App() {
   } // Grid constructor
 
   const length = 13
-  const width = 13
+  const width = 500
 
-  const [frog, setFrog] = useState([12, 5])
+  const [frog, setFrog] = useState([12 /*row*/, 250 /*horizontal position*/])
   const [pressedKeys, setPressedKeys] = useState(new Set());
   const [score, setScore] = useState(0)
   const [time, setTime] = useState(60)
@@ -35,7 +35,7 @@ function App() {
     setFrogDead(true);
     if (lives > 0) {
       setTimeout(() => {
-        setFrog([12, 5]);
+        setFrog([12, 50]);
         setFurthestRow(length - 1);
         setLives(lives - 1);
         setFrogDead(false);
@@ -82,10 +82,10 @@ function App() {
             if (row < length - 1 && row > 0) setFrog([row + 1, col]); // Move down (increase row)
             break;
           case 'ArrowLeft':
-            if (col > 0 && row > 0) setFrog([row, col - 1]); // Move left (decrease column)
+            if (col > 0 && row > 0) setFrog([row, col - 50]); // Move left (decrease column)
             break;
           case 'ArrowRight':
-            if (col < width - 1 && row > 0) setFrog([row, col + 1]); // Move right (increase column)
+            if (col < width - 1 && row > 0) setFrog([row, col + 50]); // Move right (increase column)
             break;
           default:
             break;

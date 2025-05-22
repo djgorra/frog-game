@@ -1,82 +1,134 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import Cell from './Cell';
+import Frog from './Frog';
+import Car from './Car';
 import { logRoles } from '@testing-library/dom';
 
 const Row = memo(function Row({ frog, frogDead, rowIndex, gameActive, killFrog }) {
 
-    let width = 13
-    const [cars, setCars] = useState([
-        { row: 11, col: 9, direction: 'left', speed: 0.02 },
-        { row: 11, col: 6, direction: 'left', speed: 0.02 },
-        { row: 11, col: 3, direction: 'left', speed: 0.02 },
-        { row: 11, col: 1, direction: 'left', speed: 0.02 },
-    ]);
-    const [logs, setLogs] = useState([]);
+    const rowRef = useRef(null);
+    const [rowWidth, setRowWidth] = useState(0);
     const animationFrameId = useRef(null);
+    const lastUpdateTime = useRef(performance.now());
+    
+    // Cars configuration - using pixel positions
+    const [cars, setCars] = useState(() => {
+        // Only create cars for rowIndex 11 (road row)
+        if (rowIndex === 11) {
+            return [
+                { id: 1, position: 200, direction: 'left', speed: 100 }, // pixels per second
+                { id: 2, position: 400, direction: 'left', speed: 100 },
+                { id: 3, position: 300, direction: 'left', speed: 100 },
+                { id: 4, position: 100, direction: 'left', speed: 100 },
+            ];
+        }
+        return [];
+    });
 
-    // const getCars = () => {
-
-    // }
-
-    // Move cars using requestAnimationFrame  
+    // Measure row width on mount/resize
     useEffect(() => {
-        if (!gameActive) {
+        const handleResize = () => {
+            if (rowRef.current) {
+                setRowWidth(rowRef.current.offsetWidth);
+            }
+        };
+        
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Convert frog's percentage position to pixels
+    const frogPositionPx = rowWidth * (frog[1] / 100);
+
+    // Smooth movement for cars
+    const moveCars = useCallback((timestamp) => {
+        if (!lastUpdateTime.current) {
+            lastUpdateTime.current = timestamp;
+            animationFrameId.current = requestAnimationFrame(moveCars);
+            return;
+        }
+
+        const deltaTime = (timestamp - lastUpdateTime.current) / 1000; // in seconds
+        lastUpdateTime.current = timestamp;
+        
+        setCars(prevCars => 
+            prevCars.map(car => {
+                const movement = car.speed * deltaTime;
+                let newPosition = car.position + (car.direction === 'right' ? movement : -movement);
+                
+                // Wrap around edges
+                if (newPosition > 1) newPosition = 0;
+                if (newPosition < 0) newPosition = 1;
+                
+                return { ...car, position: newPosition };
+            })
+        );
+        
+        animationFrameId.current = requestAnimationFrame(moveCars);
+    }, [gameActive]);
+
+    // Start/stop animation
+    useEffect(() => {
+        if (!gameActive || rowWidth === 0 || cars.length === 0) {
             if (animationFrameId.current) {
                 cancelAnimationFrame(animationFrameId.current);
                 animationFrameId.current = null;
             }
             return;
         }
-
-        const moveCars = () => {
-            setCars(prevCars =>
-                prevCars.map(car => {
-                    const movement = car.speed
-                    let newCol = car.col + (car.direction === 'right' ? movement : -movement);
-
-                    // Wrap around edges
-                    if (newCol >= width) newCol -= width;
-                    if (newCol < 0) newCol += width;
-
-                    return { ...car, col: newCol };
-                })
-            );
-
-            animationFrameId.current = requestAnimationFrame(moveCars);
-        };
-
+        
+        lastUpdateTime.current = performance.now();
         animationFrameId.current = requestAnimationFrame(moveCars);
-
+        
         return () => {
             if (animationFrameId.current) {
                 cancelAnimationFrame(animationFrameId.current);
+                animationFrameId.current = null;
             }
         };
-    }, [gameActive]);
+    }, [gameActive, rowWidth, cars.length, moveCars]);
 
-    // Check for collisions
+    // --- Collision detection ---
     useEffect(() => {
+        if (!gameActive || frog[0] !== rowIndex || rowWidth === 0 || cars.length === 0) return;
+        
+        const frogWidth = 40; // Approximate frog width in pixels
+        const carWidth = 50; // Approximate car width in pixels
+        
         const collision = cars.some(car => {
-            const frogCol = Math.round(frog[1]);
-            const carCol = Math.round(car.col);
-            return car.row === frog[0] && carCol === frogCol;
+            const carLeft = car.position - carWidth/2;
+            const carRight = car.position + carWidth/2;
+            const frogLeft = frogPositionPx - frogWidth/2;
+            const frogRight = frogPositionPx + frogWidth/2;
+            
+            return (
+                (frogLeft >= carLeft && frogLeft <= carRight) ||
+                (frogRight >= carLeft && frogRight <= carRight) ||
+                (frogLeft <= carLeft && frogRight >= carRight)
+            );
         });
-
+        
         if (collision) {
             killFrog();
         }
-    }, [frog, cars]);
+    }, [cars, frogPositionPx, gameActive, rowIndex, killFrog, rowWidth, frog]);
+    // --- End of collision detection ---
+
+    const hasFrog = frog[0] === rowIndex;
 
     return (
         <>
             <div key={rowIndex} className={`row row-${rowIndex}`}>
-                {Array.from({ length: width }).map((_, i) => (
-                    <Cell
-                        frog={frog}
-                        frogDead={frogDead}
-                        cellIndex={i}
-                        rowIndex={rowIndex} />
-                ))}
+                {hasFrog ? (<Frog frog={frog} isDead={frogDead} rowIndex={rowIndex} />) : null}
+
+                {cars.map(car => (
+                <Car 
+                    key={car.id}
+                    position={car.position}
+                    direction={car.direction}
+                />
+            ))}
             </div>
         </>
     );
