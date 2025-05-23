@@ -125,7 +125,8 @@ function App() {
             rowIndex={rowIndex}
             frog={frog}
             frogDead={frogDead}
-            killFrog={killFrog} />
+            killFrog={killFrog}
+            gameActive={gameActive} />
         ))}
       </div>
       <div className="gameInfoContainer">
